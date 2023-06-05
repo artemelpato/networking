@@ -12,6 +12,7 @@
 #define GREEN "\033[0;32m"
 #define RESET_COLOR "\033[0m"
 #define YELLOW "\033[0;33m"
+#define INDEX "index.html"
 
 void log_and_exit(const char*);
 void log_info(const char*);
@@ -50,20 +51,24 @@ int main() {
     (void) n_recv;
     printf(GREEN "[MESSAGE RECEIVED]: " RESET_COLOR "%s", buffer);
 
-    /*memset(buffer, 0, sizeof(buffer));*/
-    /*snprintf(buffer, sizeof(buffer), "HTTP/1.0 200 OK\r\n\r\nHI!!!!!!!!!");*/
-    /*write(client_socket, buffer, strlen(buffer));*/
+    char index_page[1 << 15];
+    FILE* index_file = fopen(INDEX, "r");
+    read(fileno(index_file), index_page, sizeof(index_page));
 
-    while (n_recv > 0) {
-        if (strncmp(buffer, "end\n", 4) == 0) {
-            log_info("got end");
-            break;
-        }
+    memset(buffer, 0, sizeof(buffer));
+    snprintf(buffer, sizeof(buffer), "HTTP/1.0 200 OK\r\n\r\n%s", index_page);
+    write(client_socket, buffer, strlen(buffer));
 
-        printf(GREEN "[MESSAGE RECEIVED]: " RESET_COLOR "%s", buffer);
-        memset(buffer, 0, 1024);
-        n_recv = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
-    }
+    /*while (n_recv > 0) {*/
+        /*if (strncmp(buffer, "end\n", 4) == 0) {*/
+            /*log_info("got end");*/
+            /*break;*/
+        /*}*/
+
+        /*printf(GREEN "[MESSAGE RECEIVED]: " RESET_COLOR "%s", buffer);*/
+        /*memset(buffer, 0, 1024);*/
+        /*n_recv = recv(client_socket, buffer, sizeof(buffer) - 1, 0);*/
+    /*}*/
 
     close(client_socket);
     shutdown(socket_fd, SHUT_RDWR);
