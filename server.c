@@ -22,17 +22,13 @@ typedef struct sockaddr_in SockAddrIn;
 
 int main() {
     int err = 0;
-    SockAddrIn address;
-    socklen_t addr_len = sizeof(address);
-    int socket_fd;
-    char buffer[1024];
-    int client_socket;
-    int n_recv;
 
-    socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+    int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     check_and_exit(socket_fd, "can't create socket");
     log_info("succesfully opened socket");
 
+    SockAddrIn address;
+    socklen_t addr_len = sizeof(address);
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(PORT);
@@ -41,15 +37,16 @@ int main() {
     check_and_exit(err, "can't bind socket");
     log_info("succesfully bind socket");
    
-    memset(buffer, 0, sizeof(buffer));
     err = listen(socket_fd, 3);
     check_and_exit(err, "can't listen");
 
-    client_socket = accept(socket_fd, (SockAddr*)&address, &addr_len);
+    int client_socket = accept(socket_fd, (SockAddr*)&address, &addr_len);
     check_and_exit(client_socket, "can't accept");
     log_info("connection established");
 
-    n_recv = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
+    char buffer[1024];
+    memset(buffer, 0, sizeof(buffer));
+    int n_recv = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
     while (n_recv > 0) {
         if (strncmp(buffer, "end\n", 4) == 0) {
             log_info("got end");
