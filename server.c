@@ -8,6 +8,11 @@
 
 #define PORT 8080
 
+#define RED "\033[0;31m"
+#define GREEN "\033[0;32m"
+#define RESET_COLOR "\033[0m"
+#define YELLOW "\033[0;33m"
+
 void log_and_exit(const char*);
 void log_info(const char*);
 
@@ -45,14 +50,24 @@ int main() {
     int new_socket = accept(socket_fd, (struct sockaddr*)&address, &addr_len);
     if (new_socket < 0) 
         log_info("can't accept");
+    log_info("connection established");
 
-    recv(new_socket, buffer, 1024, 0);
-    printf("[MESSAGE RECEIVED]: %s", buffer);
+    int n_recv = recv(new_socket, buffer, 1023, 0);
+    while (n_recv > 0) {
+        if (strcmp(buffer, "end\n") == 0) {
+            log_info("got end");
+            break;
+        }
 
-    sleep(3);
-    char hi[] = "oh hi!!!\n";
-    send(new_socket, hi, sizeof(hi), 0);
-    log_info("message sent");
+        printf(GREEN "[MESSAGE RECEIVED]: " RESET_COLOR "%s", buffer);
+        memset(buffer, 0, 1024);
+        n_recv = recv(new_socket, buffer, 1023, 0);
+    }
+
+    /*sleep(3);*/
+    /*char hi[] = "oh hi!!!\n";*/
+    /*send(new_socket, hi, sizeof(hi), 0);*/
+    /*log_info("message sent");*/
 
     close(new_socket);
     shutdown(socket_fd, SHUT_RDWR);
@@ -61,12 +76,12 @@ int main() {
 }
 
 void log_and_exit(const char* msg) {
-    printf("[ERROR]: %s\n", msg);
+    printf(RED "[ERROR]:" RESET_COLOR " %s\n", msg);
     exit(-1);
 }
 
 void log_info(const char* msg) {
-    printf("[INFO]: %s\n", msg);
+    printf(YELLOW "[INFO]:" RESET_COLOR " %s\n", msg);
     return;
 }
 
