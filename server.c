@@ -46,8 +46,13 @@ int main() {
     if (new_socket < 0) 
         log_info("can't accept");
 
-    read(new_socket, buffer, 1024);
+    recv(new_socket, buffer, 1024, 0);
     printf("[MESSAGE RECEIVED]: %s", buffer);
+
+    sleep(3);
+    char hi[] = "oh hi!!!\n";
+    send(new_socket, hi, sizeof(hi), 0);
+    log_info("message sent");
 
     close(new_socket);
     shutdown(socket_fd, SHUT_RDWR);
