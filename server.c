@@ -47,6 +47,13 @@ int main() {
     char buffer[1024];
     memset(buffer, 0, sizeof(buffer));
     int n_recv = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
+    (void) n_recv;
+    printf(GREEN "[MESSAGE RECEIVED]: " RESET_COLOR "%s", buffer);
+
+    /*memset(buffer, 0, sizeof(buffer));*/
+    /*snprintf(buffer, sizeof(buffer), "HTTP/1.0 200 OK\r\n\r\nHI!!!!!!!!!");*/
+    /*write(client_socket, buffer, strlen(buffer));*/
+
     while (n_recv > 0) {
         if (strncmp(buffer, "end\n", 4) == 0) {
             log_info("got end");
