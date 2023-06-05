@@ -15,63 +15,56 @@
 
 void log_and_exit(const char*);
 void log_info(const char*);
+void check_and_exit(int cond, const char* msg);
+
+typedef struct sockaddr SockAddr;
+typedef struct sockaddr_in SockAddrIn;
 
 int main() {
     int err = 0;
+    SockAddrIn address;
+    socklen_t addr_len = sizeof(address);
+    int socket_fd;
+    char buffer[1024];
+    int client_socket;
+    int n_recv;
 
-    int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (socket_fd < 0) 
-        log_and_exit("socket file desc is negative");
+    socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+    check_and_exit(socket_fd, "can't create socket");
     log_info("succesfully opened socket");
 
-    int opt = 1;
-    err = setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
-                     &opt, sizeof(opt));
-    if (err != 0) 
-        log_and_exit("can't set socket options");
-
-    struct sockaddr_in address;
-    socklen_t addr_len = sizeof(address);
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(PORT);
 
-    err = bind(socket_fd, (struct sockaddr*)&address, sizeof(address));
-    if (err != 0)
-        log_and_exit("can't bind socket");
+    err = bind(socket_fd, (SockAddr*)&address, sizeof(address));
+    check_and_exit(err, "can't bind socket");
     log_info("succesfully bind socket");
    
-    char buffer[1024];
-    memset(buffer, 0, 1024);
+    memset(buffer, 0, sizeof(buffer));
     err = listen(socket_fd, 3);
-    if (err != 0) 
-        log_info("can't listen");
+    check_and_exit(err, "can't listen");
 
-    int new_socket = accept(socket_fd, (struct sockaddr*)&address, &addr_len);
-    if (new_socket < 0) 
-        log_info("can't accept");
+    client_socket = accept(socket_fd, (SockAddr*)&address, &addr_len);
+    check_and_exit(client_socket, "can't accept");
     log_info("connection established");
 
-    int n_recv = recv(new_socket, buffer, 1023, 0);
+    n_recv = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
     while (n_recv > 0) {
-        if (strcmp(buffer, "end\n") == 0) {
+        if (strncmp(buffer, "end\n", 4) == 0) {
             log_info("got end");
             break;
         }
 
         printf(GREEN "[MESSAGE RECEIVED]: " RESET_COLOR "%s", buffer);
         memset(buffer, 0, 1024);
-        n_recv = recv(new_socket, buffer, 1023, 0);
+        n_recv = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
     }
 
-    /*sleep(3);*/
-    /*char hi[] = "oh hi!!!\n";*/
-    /*send(new_socket, hi, sizeof(hi), 0);*/
-    /*log_info("message sent");*/
-
-    close(new_socket);
+    close(client_socket);
     shutdown(socket_fd, SHUT_RDWR);
     log_info("socket closed");
+
     return 0;
 }
 
@@ -82,6 +75,12 @@ void log_and_exit(const char* msg) {
 
 void log_info(const char* msg) {
     printf(YELLOW "[INFO]:" RESET_COLOR " %s\n", msg);
+    return;
+}
+
+void check_and_exit(int cond, const char* msg) {
+    if (cond < 0) 
+        log_and_exit(msg);
     return;
 }
 
