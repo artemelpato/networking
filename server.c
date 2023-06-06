@@ -46,36 +46,39 @@ int main() {
     err = listen(socket_fd, 3);
     check_and_exit(err, "can't listen");
 
-    int client_socket = accept(socket_fd, (SockAddr*)&address, &addr_len);
-    check_and_exit(client_socket, "can't accept");
-    log_info("connection established");
-
     char buffer[1024];
-    memset(buffer, 0, sizeof(buffer));
-    int n_recv = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
-    (void) n_recv;
-    printf(GREEN "[MESSAGE RECEIVED]: " RESET_COLOR "%s", buffer);
-
     char index_page[1 << 15];
-    FILE* index_file = fopen(INDEX, "r");
-    read(fileno(index_file), index_page, sizeof(index_page));
 
-    memset(buffer, 0, sizeof(buffer));
-    snprintf(buffer, sizeof(buffer), "HTTP/1.0 200 OK\r\n\r\n%s", index_page);
-    write(client_socket, buffer, strlen(buffer));
+    while (1) {
+        int client_socket = accept(socket_fd, (SockAddr*)&address, &addr_len);
+        check_and_exit(client_socket, "can't accept");
+        log_info("connection established");
 
-    /*while (n_recv > 0) {*/
-        /*if (strncmp(buffer, "end\n", 4) == 0) {*/
-            /*log_info("got end");*/
-            /*break;*/
-        /*}*/
+        memset(buffer, 0, sizeof(buffer));
+        int n_recv = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
+        (void) n_recv;
 
-        /*printf(GREEN "[MESSAGE RECEIVED]: " RESET_COLOR "%s", buffer);*/
-        /*memset(buffer, 0, 1024);*/
-        /*n_recv = recv(client_socket, buffer, sizeof(buffer) - 1, 0);*/
-    /*}*/
+        char http_request[] = "GET / HTTP/1.1";
+        if (strncmp(buffer, http_request, sizeof(http_request) - 1) != 0) {
+            printf(GREEN "[MESSAGE RECEIVED]: " RESET_COLOR "%s", buffer);
+            goto connection_close;
+        }
 
-    close(client_socket);
+        printf(GREEN "[MESSAGE RECEIVED]: " RESET_COLOR "%s", "got http request\n");
+
+        FILE* index_file = fopen(INDEX, "r");
+        read(fileno(index_file), index_page, sizeof(index_page));
+        fclose(index_file);
+
+        memset(buffer, 0, sizeof(buffer));
+        snprintf(buffer, sizeof(buffer), "HTTP/1.0 200 OK\r\n\r\n%s", index_page);
+        write(client_socket, buffer, strlen(buffer));
+        
+connection_close:
+        close(client_socket);
+        log_info("connection closed");
+    }
+
     shutdown(socket_fd, SHUT_RDWR);
     log_info("socket closed");
 
