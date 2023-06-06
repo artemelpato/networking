@@ -28,6 +28,11 @@ int main() {
     check_and_exit(socket_fd, "can't create socket");
     log_info("succesfully opened socket");
 
+    int opt = 1;
+    err = setsockopt(socket_fd, SOL_SOCKET, 
+                     SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
+    check_and_exit(err, "can't set socket options");
+
     SockAddrIn address;
     socklen_t addr_len = sizeof(address);
     address.sin_family = AF_INET;
