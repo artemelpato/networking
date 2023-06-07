@@ -33,11 +33,12 @@ int main() {
                      SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
     check_and_exit(err, "can't set socket options");
 
-    SockAddrIn address;
+    SockAddrIn address = {
+        .sin_family = AF_INET,
+        .sin_port = htons(PORT),
+        .sin_addr.s_addr = INADDR_ANY
+    };
     socklen_t addr_len = sizeof(address);
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(PORT);
 
     err = bind(socket_fd, (SockAddr*)&address, sizeof(address));
     check_and_exit(err, "can't bind socket");
