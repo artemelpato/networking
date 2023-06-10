@@ -46,7 +46,7 @@ int string_tokenize(StringView* out, size_t n, StringView str, StringView delims
 }
 
 int main() {
-    StringView request = STR_VIEW_LITERAL("hello, handsome, you, my, love");
+    StringView request = STR_VIEW_LITERAL("hello, han dsome, you, my, love");
     StringView delims = STR_VIEW_LITERAL(",");
 
     size_t n_tokens = string_count_tokens(request, delims);
@@ -55,8 +55,19 @@ int main() {
 
 
     for (size_t i = 0; i < n_tokens; i++) {
-        printf("--- %.*s\n", (int)tokens[i].len, tokens[i].str);
+        printf(" --- %.*s\n", (int)tokens[i].len, tokens[i].str);
     }
 
+    StringView subdels = STR_VIEW_LITERAL(" ");
+    size_t n_subtokens = string_count_tokens(tokens[1], subdels);
+    StringView* subtokens = malloc(n_subtokens * sizeof(StringView));
+    string_tokenize(subtokens, n_subtokens, tokens[1], subdels);
+
+    for (size_t i = 0; i < n_subtokens; ++i) {
+        printf(" ====== %.*s\n", (int)subtokens[i].len, subtokens[i].str);
+    }
+
+    free(subtokens);
+    free(tokens);
     return 0;
 };
