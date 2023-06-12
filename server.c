@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "better_string.h"
 
 #define PORT 8080
 
@@ -59,15 +60,52 @@ int main() {
         int n_recv = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
         (void) n_recv;
 
-        char http_request[] = "GET / HTTP/1.1";
-        if (strncmp(buffer, http_request, sizeof(http_request) - 1) != 0) {
-            printf(GREEN "[MESSAGE RECEIVED]: " RESET_COLOR "%s", buffer);
-            goto connection_close;
+        /*char http_request[] = "GET / HTTP/1.1";*/
+        /*if (strncmp(buffer, http_request, sizeof(http_request) - 1) != 0) {*/
+            /*printf(GREEN "[MESSAGE RECEIVED]: " RESET_COLOR "%s", buffer);*/
+            /*goto connection_close;*/
+        /*}*/
+
+        /*printf(GREEN "[MESSAGE RECEIVED]: " RESET_COLOR "%s", "got http request\n");*/
+
+        StringView request = {
+            .str = buffer, 
+            .len = strlen(buffer)
+        };
+
+        StringView file_name = {0};
+
+        StringView token = string_tokenize(&request, STR_VIEW_LITERAL("\n\r"));
+        while (token.str) {
+            printf("token: |%.*s|\n", (int)token.len, token.str);
+
+            StringView subtoken = string_tokenize(&token, STR_VIEW_LITERAL(" "));
+            while (subtoken.str) {
+                printf("\tsubtoken: |%.*s|\n", (int)subtoken.len, subtoken.str);
+
+                if (string_compare(subtoken, STR_VIEW_LITERAL("GET")) == 0) {
+                    printf("GET TOKEN\n");
+                    subtoken = string_tokenize(&token, STR_VIEW_LITERAL(" "));
+                    subtoken.str++;
+                    subtoken.len--;
+
+                    file_name = subtoken;
+                }
+
+                subtoken = string_tokenize(&token, STR_VIEW_LITERAL(" "));
+            }
+
+            token = string_tokenize(&request, STR_VIEW_LITERAL("\n\r"));
         }
+        
+        if (!file_name.str || !file_name.len)
+            file_name = STR_VIEW_LITERAL("index.html");
+        printf("SHOULD SEND FILE %.*s\n", (int)file_name.len, file_name.str);
 
-        printf(GREEN "[MESSAGE RECEIVED]: " RESET_COLOR "%s", "got http request\n");
+        char file_name_z[1024] = {0};
+        snprintf(file_name_z, 1024, "%.*s", (int)file_name.len, file_name.str);
 
-        FILE* index_file = fopen(INDEX, "r");
+        FILE* index_file = fopen(file_name_z, "r");
         read(fileno(index_file), index_page, sizeof(index_page));
         fclose(index_file);
 
@@ -75,7 +113,7 @@ int main() {
         snprintf(buffer, sizeof(buffer), "HTTP/1.0 200 OK\r\n\r\n%s", index_page);
         write(client_socket, buffer, strlen(buffer));
         
-connection_close:
+//connection_close:
         close(client_socket);
         log_info("connection closed");
     }

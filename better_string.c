@@ -118,43 +118,43 @@ int string_compare(StringView s1, StringView s2) {
     return count;
 }
 
-int main() {
-    StringView request = STR_VIEW_LITERAL(
-        "GET /other_page.html HTTP/1.1\r\n\r\n"
-        "Host: localhost:8080\n"
-        "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/114.0\n"
-        "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8\n"
-        "Accept-Language: en-US,en;q=0.5\n"
-        "Accept-Encoding: gzip, deflate, br\n"
-        "Connection: keep-alive\n"
-        "Referer: http://localhost:8080/\n"
-        "Upgrade-Insecure-Requests: 1\n"
-        "Sec-Fetch-Dest: document\n"
-        "Sec-Fetch-Mode: navigate\n"
-        "Sec-Fetch-Site: same-origin\n"
-        "Sec-Fetch-User: ?1\n");
+/*int main() {*/
+    /*StringView request = STR_VIEW_LITERAL(*/
+        /*"GET /other_page.html HTTP/1.1\r\n\r\n"*/
+        /*"Host: localhost:8080\n"*/
+        /*"User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/114.0\n"*/
+        /*"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,;q=0.8\n"*/
+        /*"Accept-Language: en-US,en;q=0.5\n"*/
+        /*"Accept-Encoding: gzip, deflate, br\n"*/
+        /*"Connection: keep-alive\n"*/
+        /*"Referer: http://localhost:8080/\n"*/
+        /*"Upgrade-Insecure-Requests: 1\n"*/
+        /*"Sec-Fetch-Dest: document\n"*/
+        /*"Sec-Fetch-Mode: navigate\n"*/
+        /*"Sec-Fetch-Site: same-origin\n"*/
+        /*"Sec-Fetch-User: ?1\n");*/
 
-    StringView delims = STR_VIEW_LITERAL("\n\r");
-    StringView subdelims = STR_VIEW_LITERAL(" ");
+    /*StringView delims = STR_VIEW_LITERAL("\n\r");*/
+    /*StringView subdelims = STR_VIEW_LITERAL(" ");*/
     
-    StringView token = string_tokenize(&request, delims);
-    while (token.str) {
-        printf("token: |%.*s|\n", (int)token.len, token.str);
+    /*StringView token = string_tokenize(&request, delims);*/
+    /*while (token.str) {*/
+        /*printf("token: |%.*s|\n", (int)token.len, token.str);*/
 
-        StringView subtoken = string_tokenize(&token, subdelims);
+        /*StringView subtoken = string_tokenize(&token, subdelims);*/
 
-        while (subtoken.str) {
-            printf("\tsubtoken: |%.*s|\n", (int)subtoken.len, subtoken.str);
+        /*while (subtoken.str) {*/
+            /*printf("\tsubtoken: |%.*s|\n", (int)subtoken.len, subtoken.str);*/
 
-            if (string_compare(subtoken, STR_VIEW_LITERAL("GET")) == 0) {
-                printf("GET request!!!\n");
-            }
+            /*if (string_compare(subtoken, STR_VIEW_LITERAL("GET")) == 0) {*/
+                /*printf("GET request!!!\n");*/
+            /*}*/
 
-            subtoken = string_tokenize(&token, subdelims);
-        }
+            /*subtoken = string_tokenize(&token, subdelims);*/
+        /*}*/
 
-        token = string_tokenize(&request, delims);
-    }
+        /*token = string_tokenize(&request, delims);*/
+    /*}*/
 
-    return 0;
-};
+    /*return 0;*/
+/*};*/
