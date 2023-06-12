@@ -48,7 +48,7 @@ int main() {
     err = listen(socket_fd, 3);
     check_and_exit(err, "can't listen");
 
-    char buffer[1024];
+    char buffer[1000000];
     char index_page[1 << 15];
 
     while (1) {
@@ -110,7 +110,12 @@ int main() {
         fclose(index_file);
 
         memset(buffer, 0, sizeof(buffer));
-        snprintf(buffer, sizeof(buffer), "HTTP/1.0 200 OK\r\n\r\n%s", index_page);
+
+        if (string_compare(file_name, STR_VIEW_LITERAL("anatrain.png")) == 0) {
+            snprintf(buffer, sizeof(buffer), "%s", index_page);
+        } else {
+            snprintf(buffer, sizeof(buffer), "HTTP/1.0 200 OK\r\n\r\n%s", index_page);
+        }
         write(client_socket, buffer, strlen(buffer));
         
 //connection_close:
