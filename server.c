@@ -48,8 +48,7 @@ int main() {
     err = listen(socket_fd, 3);
     check_and_exit(err, "can't listen");
 
-    char buffer[1000000];
-    char index_page[1 << 15];
+    char buffer[1024];
 
     while (1) {
         int client_socket = accept(socket_fd, (SockAddr*)&address, &addr_len);
@@ -77,12 +76,9 @@ int main() {
 
         StringView token = string_tokenize(&request, STR_VIEW_LITERAL("\n\r"));
         while (token.str) {
-            printf("token: |%.*s|\n", (int)token.len, token.str);
 
             StringView subtoken = string_tokenize(&token, STR_VIEW_LITERAL(" "));
             while (subtoken.str) {
-                printf("\tsubtoken: |%.*s|\n", (int)subtoken.len, subtoken.str);
-
                 if (string_compare(subtoken, STR_VIEW_LITERAL("GET")) == 0) {
                     printf("GET TOKEN\n");
                     subtoken = string_tokenize(&token, STR_VIEW_LITERAL(" "));
@@ -105,20 +101,36 @@ int main() {
         char file_name_z[1024] = {0};
         snprintf(file_name_z, 1024, "%.*s", (int)file_name.len, file_name.str);
 
-        FILE* index_file = fopen(file_name_z, "r");
-        read(fileno(index_file), index_page, sizeof(index_page));
+        FILE* index_file = fopen(file_name_z, "rb");
+        if (!index_file) 
+            goto connection_close;
+
+        fseek(index_file, 0, SEEK_END);
+        size_t n_bytes = ftell(index_file);
+        fseek(index_file, 0, 0);
+
+        StringView http_code = STR_VIEW_LITERAL("HTTP/1.0 200 OK\r\n\r\n");
+
+        char* file_buffer = malloc(n_bytes * sizeof(char));
+        /*read(fileno(index_file), file_buffer, n_bytes);*/
+        fread(file_buffer, sizeof(char), n_bytes, index_file);
+
+        char* response_buffer = malloc(sizeof(char) * (n_bytes + http_code.len));
+        snprintf(
+            response_buffer, sizeof(char) * (n_bytes + http_code.len),
+            "%.*s%.*s", 
+            (int)http_code.len, http_code.str, 
+            (int)n_bytes, file_buffer);
+                 
+        write(client_socket, http_code.str, http_code.len);
+        write(client_socket, file_buffer, n_bytes);
+        /*write(client_socket, response_buffer, n_bytes + http_code.len);*/
+
+        free(file_buffer);
+        free(response_buffer);
+
         fclose(index_file);
-
-        memset(buffer, 0, sizeof(buffer));
-
-        if (string_compare(file_name, STR_VIEW_LITERAL("anatrain.png")) == 0) {
-            snprintf(buffer, sizeof(buffer), "%s", index_page);
-        } else {
-            snprintf(buffer, sizeof(buffer), "HTTP/1.0 200 OK\r\n\r\n%s", index_page);
-        }
-        write(client_socket, buffer, strlen(buffer));
-        
-//connection_close:
+connection_close:
         close(client_socket);
         log_info("connection closed");
     }
