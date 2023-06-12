@@ -15,7 +15,6 @@ typedef struct String {
 
 #define STR_VIEW_LITERAL(x) (StringView){ .str = x, .len = sizeof(x) - 1 }
 
-size_t string_count_tokens(StringView str, StringView delims);
-int    string_tokenize(StringView* out, size_t n, StringView str, StringView delims);
+StringView string_tokenize(StringView* str, StringView delims);
 
 #endif
