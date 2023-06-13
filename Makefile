@@ -1,12 +1,19 @@
 CC=clang
-CFLAGS=-Wall -Wextra -Werror
+CFLAGS=-Wall -Wextra -Werror -g
+LDFLAGS=
+
+SRC= server.c better_string.c
+OBJ=$(patsubst %.c, build/%.o, $(SRC))
 
 .PHONY: all clean
 
-all: server client better_string
+all: server
 
-%: %.c
-	$(CC) $(CFLAGS) $< -o $@
+server: $(OBJ) 
+	$(CC) $^ -o $@ $(LDFLAGS)
+
+build/%.o: %.c
+	$(CC) $(CFLAGS) $< -c -o $@
 
 clean: 
 	rm -f server client
