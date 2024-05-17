@@ -18,6 +18,16 @@ struct str_view {
 #define STR_VIEW_LITERAL(x) (struct str_view){ .str = x, .len = sizeof(x) - 1 }
 
 /**
+ * @brief Format for printf
+ */
+#define STR_VIEW_F "%.*s"
+
+/**
+ * @brief Format argument  for printf
+ */
+#define STR_VIEW_F_ARG(x) (i32)x.len, x.str
+
+/**
  * @brief Tokenize string view at specified delimeters
  * @param[in,ou] str String to tokenize
  * @param[in] delims Delimeters at which string will be tokenized

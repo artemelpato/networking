@@ -6,6 +6,7 @@
 #include "str_view.h"
 #include "unistd.h"
 #include "logger.h"
+#include "http_request.h"
 
 
 enum http_server_error http_server__init(struct http_server* server) {
@@ -51,7 +52,7 @@ static inline i32 http_server__accept(struct http_server* server) {
 }
 
 void http_server__serve(struct http_server* server) {
-    char buffer[1024];
+    /*char buffer[1024];*/
 
     while (1) {
         log_info("started accepting");
@@ -60,43 +61,13 @@ void http_server__serve(struct http_server* server) {
             check_and_exit(client, "can't accept");
         log_info("connection established");
 
-        memset(buffer, 0, sizeof(buffer));
-        int n_recv = recv(client, buffer, sizeof(buffer) - 1, 0);
-        (void) n_recv;
+        struct http_request req;
+        http_request__read(&req, client);
 
-        struct str_view request = {
-            .str = buffer, 
-            .len = strlen(buffer)
-        };
-
-        struct str_view file_name = {0};
-
-        struct str_view token = str_view__tokenize(&request, STR_VIEW_LITERAL("\n\r"));
-        while (token.str) {
-
-            struct str_view subtoken = str_view__tokenize(&token, STR_VIEW_LITERAL(" "));
-            while (subtoken.str) {
-                if (str_view__compare(subtoken, STR_VIEW_LITERAL("GET")) == 0) {
-                    printf("GET TOKEN\n");
-                    subtoken = str_view__tokenize(&token, STR_VIEW_LITERAL(" "));
-                    subtoken.str++;
-                    subtoken.len--;
-
-                    file_name = subtoken;
-                }
-
-                subtoken = str_view__tokenize(&token, STR_VIEW_LITERAL(" "));
-            }
-
-            token = str_view__tokenize(&request, STR_VIEW_LITERAL("\n\r"));
-        }
-        
-        if (!file_name.str || !file_name.len)
-            file_name = STR_VIEW_LITERAL("index.html");
-        printf("SHOULD SEND FILE %.*s\n", (int)file_name.len, file_name.str);
+        printf("SHOULD SEND FILE %.*s\n", (int)req.requested_file.len, req.requested_file.str);
 
         char file_name_z[1024] = {0};
-        snprintf(file_name_z, 1024, "%.*s", (int)file_name.len, file_name.str);
+        snprintf(file_name_z, 1024, "%.*s", (int)req.requested_file.len, req.requested_file.str);
 
         FILE* index_file = fopen(file_name_z, "rb");
         if (!index_file) 
@@ -109,7 +80,6 @@ void http_server__serve(struct http_server* server) {
         struct str_view http_code = STR_VIEW_LITERAL("HTTP/1.0 200 OK\r\n\r\n");
 
         char* file_buffer = malloc(n_bytes * sizeof(char));
-        /*read(fileno(index_file), file_buffer, n_bytes);*/
         fread(file_buffer, sizeof(char), n_bytes, index_file);
 
         char* response_buffer = malloc(sizeof(char) * (n_bytes + http_code.len));
