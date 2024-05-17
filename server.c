@@ -5,7 +5,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "better_string.h"
+#include "str_view.h"
 
 #define PORT 8080
 
@@ -67,31 +67,31 @@ int main() {
 
         /*printf(GREEN "[MESSAGE RECEIVED]: " RESET_COLOR "%s", "got http request\n");*/
 
-        StringView request = {
+        struct str_view request = {
             .str = buffer, 
             .len = strlen(buffer)
         };
 
-        StringView file_name = {0};
+        struct str_view file_name = {0};
 
-        StringView token = string_tokenize(&request, STR_VIEW_LITERAL("\n\r"));
+        struct str_view token = str_view__tokenize(&request, STR_VIEW_LITERAL("\n\r"));
         while (token.str) {
 
-            StringView subtoken = string_tokenize(&token, STR_VIEW_LITERAL(" "));
+            struct str_view subtoken = str_view__tokenize(&token, STR_VIEW_LITERAL(" "));
             while (subtoken.str) {
-                if (string_compare(subtoken, STR_VIEW_LITERAL("GET")) == 0) {
+                if (str_view__compare(subtoken, STR_VIEW_LITERAL("GET")) == 0) {
                     printf("GET TOKEN\n");
-                    subtoken = string_tokenize(&token, STR_VIEW_LITERAL(" "));
+                    subtoken = str_view__tokenize(&token, STR_VIEW_LITERAL(" "));
                     subtoken.str++;
                     subtoken.len--;
 
                     file_name = subtoken;
                 }
 
-                subtoken = string_tokenize(&token, STR_VIEW_LITERAL(" "));
+                subtoken = str_view__tokenize(&token, STR_VIEW_LITERAL(" "));
             }
 
-            token = string_tokenize(&request, STR_VIEW_LITERAL("\n\r"));
+            token = str_view__tokenize(&request, STR_VIEW_LITERAL("\n\r"));
         }
         
         if (!file_name.str || !file_name.len)
@@ -109,7 +109,7 @@ int main() {
         size_t n_bytes = ftell(index_file);
         fseek(index_file, 0, 0);
 
-        StringView http_code = STR_VIEW_LITERAL("HTTP/1.0 200 OK\r\n\r\n");
+        struct str_view http_code = STR_VIEW_LITERAL("HTTP/1.0 200 OK\r\n\r\n");
 
         char* file_buffer = malloc(n_bytes * sizeof(char));
         /*read(fileno(index_file), file_buffer, n_bytes);*/

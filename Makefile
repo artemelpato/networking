@@ -2,7 +2,7 @@ CC=clang
 CFLAGS=-Wall -Wextra -Werror -g
 LDFLAGS=
 
-SRC= server.c better_string.c
+SRC= server.c str_view.c
 OBJ=$(patsubst %.c, build/%.o, $(SRC))
 
 .PHONY: all clean
