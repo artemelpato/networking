@@ -1,20 +1,23 @@
 CC=clang
 CFLAGS=-Wall -Wextra -Werror -g
 LDFLAGS=
+OUT_DIR=build
+EXE=server
 
-SRC= http_server.c str_view.c main.c
-OBJ=$(patsubst %.c, build/%.o, $(SRC))
+SRCS=$(wildcard *.c)
+HEADERS=$(wildcard *.h)
+OBJS=$(patsubst %.c, $(OUT_DIR)/%.o, $(SRCS))
 
 .PHONY: all clean
 
-all: main
+all: $(OUT_DIR)/$(EXE)
 
-main: $(OBJ) 
+$(OUT_DIR)/$(EXE): $(OBJS) 
 	$(CC) $^ -o $@ $(LDFLAGS)
 
-build/%.o: %.c
+$(OUT_DIR)/%.o: %.c $(HEADERS)
 	$(CC) $(CFLAGS) $< -c -o $@
 
 clean: 
-	rm -f main build/*
+	rm -f build/*
 
