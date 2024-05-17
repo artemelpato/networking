@@ -30,7 +30,7 @@ struct http_server {
 /**
  * @brief Default server port
  */
-extern const u32 http_server__default_port;
+static const u32 http_server__default_port = 8080;
 
 /**
  * @brief Init HTTP server

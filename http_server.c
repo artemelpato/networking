@@ -12,8 +12,6 @@
 #define YELLOW "\033[0;33m"
 #define INDEX "index.html"
 
-const u32 http_server__default_port = 8080;
-
 void log_and_exit(const char* msg) {
     printf(RED "[ERROR]:" RESET_COLOR " %s\n", msg);
     exit(-1);
