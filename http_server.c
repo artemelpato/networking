@@ -56,7 +56,7 @@ void http_server__serve(struct http_server* server) {
 
     while (1) {
         log_info("started accepting");
-        int client = http_server__accept(server);
+        i32 client = http_server__accept(server);
         if (client < 0)
             check_and_exit(client, "can't accept");
         log_info("connection established");
@@ -64,10 +64,10 @@ void http_server__serve(struct http_server* server) {
         struct http_request req;
         http_request__read(&req, client);
 
-        printf("SHOULD SEND FILE %.*s\n", (int)req.requested_file.len, req.requested_file.str);
+        printf("SHOULD SEND FILE %.*s\n", (i32)req.requested_file.len, req.requested_file.str);
 
         char file_name_z[1024] = {0};
-        snprintf(file_name_z, 1024, "%.*s", (int)req.requested_file.len, req.requested_file.str);
+        snprintf(file_name_z, 1024, "%.*s", (i32)req.requested_file.len, req.requested_file.str);
 
         FILE* index_file = fopen(file_name_z, "rb");
         if (!index_file) 
@@ -86,8 +86,8 @@ void http_server__serve(struct http_server* server) {
         snprintf(
             response_buffer, sizeof(char) * (n_bytes + http_code.len),
             "%.*s%.*s", 
-            (int)http_code.len, http_code.str, 
-            (int)n_bytes, file_buffer);
+            (i32)http_code.len, http_code.str, 
+            (i32)n_bytes, file_buffer);
                  
         write(client, http_code.str, http_code.len);
         write(client, file_buffer, n_bytes);

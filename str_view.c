@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "str_view.h"
 
-static int str_view__is_delim(char c, struct str_view delims) {
+static i32 str_view__is_delim(char c, struct str_view delims) {
     for (size_t i = 0; i < delims.len; ++i) {
         if (c == delims.str[i]) 
             return 1;
@@ -102,8 +102,8 @@ struct str_view str_view__tokenize(struct str_view* str, struct str_view delims)
     return token;
 }
 
-int str_view__compare(struct str_view s1, struct str_view s2) {
-    int count = 0;
+i32 str_view__compare(struct str_view s1, struct str_view s2) {
+    i32 count = 0;
 
     if (s1.len != s2.len)
         return  s1.len > s2.len ? 1 : -1;

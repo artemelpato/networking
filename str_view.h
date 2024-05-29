@@ -2,6 +2,7 @@
 #define __STR_VIEW_H__
 
 #include <stddef.h>
+#include "types.h"
 
 /**
  * @brief Non owning string view struct
@@ -42,6 +43,6 @@ struct str_view str_view__tokenize(struct str_view* str, struct str_view delims)
  * @return 1 if s1 is bigger, else -1,
  * number of divergent character, 0 if strings are the same
  */
-int str_view__compare(struct str_view s1, struct str_view s2);
+i32 str_view__compare(struct str_view s1, struct str_view s2);
 
 #endif
