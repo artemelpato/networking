@@ -1,27 +1,30 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Artem's Site</title>
-
-        <style>
-            p {
-                font-size: 20pt
-            }
-            {
-                font-size: 20pt
-            }
-        </style>
-    </head>
+    <title>
+        Some funny Internet site
+    </title>
     <body>
-        <p>WHAT ARE YOU DOING HERE?</p>
-        
-        get back to work
-        <br>
+        You are a <b id="pussy">pussy</b>
 
-        <a href="other_page.html">here</a>
-        <br>
+        <script>
+            const change = () => {
+                const div = document.getElementById("pussy");
 
-        <img src="cat.gif" alt="cat">
-        
+                const to_pussy = div => {
+                    div.innerHTML = "pussy";
+                };
+
+                const to_fag = div => {
+                    div.innerHTML = "fag";
+                };
+
+                if (div.innerHTML == "pussy")
+                    to_fag(div);
+                else
+                    to_pussy(div);
+            };
+
+            setInterval(change, 500);
+        </script>
     </body>
 </html>
