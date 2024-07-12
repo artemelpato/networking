@@ -1,0 +1,22 @@
+* {
+    color: #323333;
+    background-color: #e6e7e8;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 80px;
+}
+
+.main-div {
+    display: block;
+}
+
+p {
+    text-align: center;
+}
+
+.pussy-class {
+    color: red;
+}
+
+.fag-class {
+    color: blue;
+}
