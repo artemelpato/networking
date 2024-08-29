@@ -1,0 +1,10 @@
+build/http_request.o
+build/http_server.o
+build/logger.o
+build/main.o
+build/server
+build/str_view.o
+.vscode/c_cpp_properties.json
+.vscode/launch.json
+.vscode/settings.json
+server
