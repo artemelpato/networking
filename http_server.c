@@ -66,6 +66,9 @@ static void handle_get_method(struct http_server* server, struct http_request* r
         return;
     }
 
+    printf("Requested file: " STR_VIEW_F "\n",
+           STR_VIEW_F_ARG(req->requested_file));
+
     snprintf(requested_filepath, sizeof(requested_filepath), 
              "%.*s", (i32)req->requested_file.len, req->requested_file.str);
 
@@ -78,17 +81,16 @@ static void handle_get_method(struct http_server* server, struct http_request* r
     bytes_to_send = ftell(file);
     fseek(file, 0, 0);
 
-    response_buffer_size = sizeof(success_code) + bytes_to_send;
-    response_buffer = malloc(sizeof(success_code) + bytes_to_send);
+    response_buffer_size = bytes_to_send;
+    response_buffer = malloc(response_buffer_size + 1);
     if (!response_buffer) {
         return;
     }
+    memset(response_buffer, 0, response_buffer_size + 1);
 
-    memcpy(response_buffer, success_code, sizeof(success_code));
-    fread(response_buffer + sizeof(success_code),
-          sizeof(char), bytes_to_send,
-          file);
+    fread(response_buffer, sizeof(char), bytes_to_send, file);
 
+    write(server->socket, success_code, sizeof(success_code));
     write(server->socket, response_buffer, response_buffer_size);
 
     free(response_buffer);

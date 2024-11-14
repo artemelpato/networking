@@ -30,7 +30,7 @@ struct http_server {
 /**
  * @brief Default server port
  */
-#define HTTP_SERVER_DEFAULT_PORT (8080)
+#define HTTP_SERVER_DEFAULT_PORT (8081)
 
 /**
  * @brief Init HTTP server

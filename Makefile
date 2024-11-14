@@ -1,4 +1,4 @@
-CC=clang
+CC=tcc
 CFLAGS=-Wall -Wextra -Werror -g
 LDFLAGS=
 OUT_DIR=build
@@ -11,13 +11,17 @@ OBJS=$(patsubst %.c, $(OUT_DIR)/%.o, $(SRCS))
 .PHONY: all clean
 
 all: $(OUT_DIR)/$(EXE)
+	$(info Done linking executable "$(EXE)")
 
 $(OUT_DIR)/$(EXE): $(OBJS) 
-	$(CC) $^ -o $@ $(LDFLAGS)
+	$(info Linking executable...)
+	@$(CC) $^ -o $@ $(LDFLAGS)
 
 $(OUT_DIR)/%.o: %.c $(HEADERS)
-	$(CC) $(CFLAGS) $< -c -o $@
+	$(info Building object "$@")
+	@$(CC) $(CFLAGS) $< -c -o $@
 
 clean: 
-	rm -f build/*
+	$(info Cleaning build directory)
+	@rm -f build/*
 
