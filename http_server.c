@@ -11,8 +11,9 @@
 
 enum http_server_error http_server__init(struct http_server* server) {
     i32 err = 0;
+    i32 opt = 1;
 
-    server->port = http_server__default_port;
+    server->port = HTTP_SERVER_DEFAULT_PORT;
 
     server->address = (struct sockaddr_in){
         .sin_family      = AF_INET,
@@ -26,7 +27,6 @@ enum http_server_error http_server__init(struct http_server* server) {
         return hse_bad_socket;
     log_info("socket()");
 
-    i32 opt = 1;
     err = setsockopt(server->socket, SOL_SOCKET,
                      SO_REUSEADDR | SO_REUSEPORT, 
                      &opt, sizeof(opt));
@@ -51,53 +51,70 @@ static inline i32 http_server__accept(struct http_server* server) {
     return accept(server->socket, (struct sockaddr*)&server->address, &server->addr_len);
 }
 
-void http_server__serve(struct http_server* server) {
-    /*char buffer[1024];*/
+/**
+ * @brief Handle GET HTTP method
+ */
+static void handle_get_method(struct http_server* server, struct http_request* req) {
+    char requested_filepath[1024] = {0};
+    FILE* file;
+    const char success_code[] = "HTTP/1.0 200 OK\r\n\r\n";
+    u32 bytes_to_send;
+    char* response_buffer;
+    u32 response_buffer_size;
 
+    if (!server | !req) {
+        return;
+    }
+
+    snprintf(requested_filepath, sizeof(requested_filepath), 
+             "%.*s", (i32)req->requested_file.len, req->requested_file.str);
+
+    file = fopen(requested_filepath, "rb");
+    if (!file) {
+        return;
+    }
+
+    fseek(file, 0, SEEK_END);
+    bytes_to_send = ftell(file);
+    fseek(file, 0, 0);
+
+    response_buffer_size = sizeof(success_code) + bytes_to_send;
+    response_buffer = malloc(sizeof(success_code) + bytes_to_send);
+    if (!response_buffer) {
+        return;
+    }
+
+    memcpy(response_buffer, success_code, sizeof(success_code));
+    fread(response_buffer + sizeof(success_code),
+          sizeof(char), bytes_to_send,
+          file);
+
+    write(server->socket, response_buffer, response_buffer_size);
+
+    free(response_buffer);
+}
+
+void http_server__serve(struct http_server* server) {
     while (1) {
+        i32 client;
+        struct http_request req;
+
         log_info("started accepting");
-        i32 client = http_server__accept(server);
+        client = http_server__accept(server);
         if (client < 0)
             check_and_exit(client, "can't accept");
         log_info("connection established");
 
-        struct http_request req;
         http_request__read(&req, client);
+        switch (req.method) {
+        case hrm_get:
+            handle_get_method(server, &req);
+            break;
 
-        printf("SHOULD SEND FILE %.*s\n", (i32)req.requested_file.len, req.requested_file.str);
+        default:
+            break;
+        }
 
-        char file_name_z[1024] = {0};
-        snprintf(file_name_z, 1024, "%.*s", (i32)req.requested_file.len, req.requested_file.str);
-
-        FILE* index_file = fopen(file_name_z, "rb");
-        if (!index_file) 
-            goto connection_close;
-
-        fseek(index_file, 0, SEEK_END);
-        size_t n_bytes = ftell(index_file);
-        fseek(index_file, 0, 0);
-
-        struct str_view http_code = STR_VIEW_LITERAL("HTTP/1.0 200 OK\r\n\r\n");
-
-        char* file_buffer = malloc(n_bytes * sizeof(char));
-        fread(file_buffer, sizeof(char), n_bytes, index_file);
-
-        char* response_buffer = malloc(sizeof(char) * (n_bytes + http_code.len));
-        snprintf(
-            response_buffer, sizeof(char) * (n_bytes + http_code.len),
-            "%.*s%.*s", 
-            (i32)http_code.len, http_code.str, 
-            (i32)n_bytes, file_buffer);
-                 
-        write(client, http_code.str, http_code.len);
-        write(client, file_buffer, n_bytes);
-        /*write(client_socket, response_buffer, n_bytes + http_code.len);*/
-
-        free(file_buffer);
-        free(response_buffer);
-
-        fclose(index_file);
-connection_close:
         close(client);
         log_info("connection closed");
     }

@@ -8,8 +8,6 @@
 #include "types.h"
 #include <netinet/in.h>
 
-//
-
 /**
  * @brief Server errors
  */
@@ -32,7 +30,7 @@ struct http_server {
 /**
  * @brief Default server port
  */
-static const u32 http_server__default_port = 8080;
+#define HTTP_SERVER_DEFAULT_PORT (8080)
 
 /**
  * @brief Init HTTP server
